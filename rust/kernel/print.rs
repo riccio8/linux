@@ -24,7 +24,12 @@ unsafe extern "C" fn rust_fmt_argument(
     use fmt::Write;
     // SAFETY: The C contract guarantees that `buf` is valid if it's less than `end`.
     let mut w = unsafe { RawFormatter::from_ptrs(buf.cast(), end.cast()) };
-    // SAFETY: TODO.
+    //SAFETY: `ptr` is provided by the kernel formatting path for the `%pA`
+// specifier during `vsnprintf` processing and always points to a valid
+// `fmt::Arguments` value created by the caller. The value lives at least
+// for the duration of this call and is only read here. It is not stored
+// or accessed after returning, so dereferencing it is safe.
+
     let _ = w.write_fmt(unsafe { *ptr.cast::<fmt::Arguments<'_>>() });
     w.pos().cast()
 }
